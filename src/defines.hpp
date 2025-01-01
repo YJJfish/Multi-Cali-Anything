@@ -1,0 +1,11 @@
+#pragma once
+
+// Feature patch size.
+#define FEATURE_PATCH_WIDTH 16
+#define FEATURE_PATCH_HEIGHT 16
+#define FEATURE_PATCH_CHANNEL 128
+
+// Cost map size.
+#define COST_MAP_WIDTH FEATURE_PATCH_WIDTH
+#define COST_MAP_HEIGHT FEATURE_PATCH_HEIGHT
+#define COST_MAP_CHANNEL 3
