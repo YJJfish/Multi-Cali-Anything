@@ -130,6 +130,7 @@ RUN git clone --recursive https://github.com/cvg/pixel-perfect-sfm && \
 RUN pip install "numpy<2.0" debugpy
 RUN apt-get update && \
 	apt-get install -y \
+	gdb \
 	wget \
 	sqlite3 \
 	libsqlite3-dev
