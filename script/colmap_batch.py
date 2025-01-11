@@ -3,12 +3,13 @@ import os
 import shutil
 import subprocess
 import pycolmap
+from typing import List
 
-def colmap_batch(input_path : str, output_path : str):
-    try:
-        shutil.rmtree(output_path)
-    except:
-        pass
+def colmap_batch(
+    input_path : str,
+    output_path : str,
+    frame_names : List[str]
+):
     try:
         os.mkdir(output_path)
     except:
@@ -17,6 +18,8 @@ def colmap_batch(input_path : str, output_path : str):
     ambiguous_recon_frames = []
     for frame_folder_name in sorted(os.listdir(input_path)):
         frame_name = frame_folder_name[5:]
+        if len(frame_names) > 0 and frame_name not in frame_names:
+            continue
         try:
             os.mkdir(os.path.join(output_path, frame_folder_name))
         except:
@@ -93,8 +96,10 @@ if __name__ == "__main__":
     )
     parser.add_argument("input", help="Path to multiface dataset.")
     parser.add_argument("output", help="Path to output result folder.")
+    parser.add_argument("--frame_names", type=str, nargs='*', help="The list of frame names to be processed. If not specified, all frames will be processed.")
     args = parser.parse_args()
     input_path = args.input
     output_path = args.output
+    frame_names = args.frame_names if args.frame_names is not None else []
     
-    colmap_batch(input_path, output_path)
+    colmap_batch(input_path, output_path, frame_names)

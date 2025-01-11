@@ -4,7 +4,7 @@ import numpy as np
 import pycolmap
 import pixsfm.refine_hloc
 from pathlib import Path
-from typing import Literal
+from typing import Literal, List
 import sqlite3
 import PIL
 
@@ -18,34 +18,45 @@ def extract_dense_features(
     output_path : str,
     mode : Literal["colmap", "pixelsfm"],
     patch_width : int,
-    patch_height : int
+    patch_height : int,
+    frame_names : List[str],
+    overwrite : bool
 ):
     # Create and connect to the SQLite database.
     if os.path.isfile(output_path):
-        os.remove(output_path)
+        if overwrite:
+            os.remove(output_path)
+    else:
+        overwrite = True
     db = sqlite3.connect(output_path)
     # Create the table.
-    db.execute(
-    """
-        CREATE TABLE dense_features(
-            frame_name INTEGER,
-            camera_name INTEGER,
-            keypoint_id INTEGER,
-            corner_x INTEGER,
-            corner_y INTEGER,
-            dense_feature BLOB,
-            PRIMARY KEY (frame_name, camera_name, keypoint_id)
+    if overwrite:
+        db.execute(
+        """
+            CREATE TABLE dense_features(
+                frame_name INTEGER,
+                camera_name INTEGER,
+                keypoint_id INTEGER,
+                corner_x INTEGER,
+                corner_y INTEGER,
+                dense_feature BLOB,
+                PRIMARY KEY (frame_name, camera_name, keypoint_id)
+            )
+        """
         )
-    """
-    )
-    db.commit()
+        db.commit()
     # Instantiate the extractor.
     sfm = pixsfm.refine_hloc.PixSfM({"dense_features": {"max_edge": 4096}})
     # For each frame.
     for frame_folder_name in sorted(os.listdir(reconstructions_path)):
         # Folder name format: "frame[6-digit frame name]".
         frame_name = frame_folder_name[5:]
+        if len(frame_names) > 0 and frame_name not in frame_names:
+            continue
         print("============================= Frame {} =============================".format(frame_name))
+        # Clear the existing data for the frame.
+        db.execute("DELETE FROM dense_features WHERE frame_name = ?", (int(frame_name),))
+        db.commit()
         # Load the reconstruction.
         if mode == "colmap":
             recon = pycolmap.Reconstruction(os.path.join(reconstructions_path, frame_folder_name, "sparse", "0"))
@@ -100,6 +111,8 @@ if __name__ == "__main__":
     parser.add_argument("--mode", help="Mode of reconstructions. For colmap, models should be placed in <dataset folder>/<frame folder>/sparse/0/. For pixelsfm, models should be placed in <dataset folder>/<frame folder>/refined/.", choices=["colmap", "pixelsfm"], default="colmap")
     parser.add_argument("--patch_width", help="Patch width of the dense feature maps.", type=int, default=FEATURE_PATCH_WIDTH)
     parser.add_argument("--patch_height", help="Patch height of the dense feature maps.", type=int, default=FEATURE_PATCH_HEIGHT)
+    parser.add_argument("--frame_names", type=str, nargs='*', help="The list of frame names to be processed. If not specified, all frames will be processed.")
+    parser.add_argument("--overwrite", type=int, help="Whether to overwrite the existing database.", choices=[0, 1], default=0)
     args = parser.parse_args()
     dataset_path = args.dataset
     reconstructions_path = args.reconstructions
@@ -107,4 +120,6 @@ if __name__ == "__main__":
     mode = args.mode
     patch_width = args.patch_width
     patch_height = args.patch_height
-    extract_dense_features(dataset_path, reconstructions_path, output_path, mode, patch_width, patch_height)
+    frame_names = args.frame_names if args.frame_names is not None else []
+    overwrite = bool(args.overwrite)
+    extract_dense_features(dataset_path, reconstructions_path, output_path, mode, patch_width, patch_height, frame_names, overwrite)
