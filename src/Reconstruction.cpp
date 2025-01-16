@@ -131,8 +131,7 @@ bool Reconstruction::load(const std::filesystem::path& path) {
 		stream << line;
 		while (true) {
 			Keypoint Keypoint{};
-			stream >> Keypoint.pixelPos(0) >> Keypoint.pixelPos(1) >> Keypoint.point3DID;
-			if (!stream.good())
+			if (!(stream >> Keypoint.pixelPos(0) >> Keypoint.pixelPos(1) >> Keypoint.point3DID))
 				break;
 			keypoints.push_back(Keypoint);
 			if (Keypoint.point3DID != -1)
@@ -200,7 +199,7 @@ bool Reconstruction::save(const std::filesystem::path& path, const KRT& krt) con
 	// Create a map from camera name to image ID.
 	// Camera ID is the same as image ID.
 	std::map<std::uint64_t, std::uint64_t> cameraName2ImageID{};
-	std::uint64_t imageIDCounter = 0ULL;
+	std::uint64_t imageIDCounter = 1ULL;
 	for (const auto& cameraParametersEntry : krt.cameraParametersMap) {
 		std::uint64_t cameraName = cameraParametersEntry.first;
 		cameraName2ImageID[cameraName] = imageIDCounter++;
@@ -255,7 +254,7 @@ bool Reconstruction::save(const std::filesystem::path& path, const KRT& krt) con
 		fout << cameraName2ImageID.at(cameraName) << " "
 			<< rotationQuat.w() << " " << rotationQuat.x() << " " << rotationQuat.y() << " " << rotationQuat.z() << " "
 			<< cameraData.translation(0) << " " << cameraData.translation(1) << " " << cameraData.translation(2) << " "
-			<< cameraName << " camera" << std::setw(6) << std::setfill('0') << cameraName << "_frame" << std::setw(6) << std::setfill('0') << this->frameName << ".png" << std::endl;
+			<< cameraName2ImageID.at(cameraName) << " camera" << std::setw(6) << std::setfill('0') << cameraName << "_frame" << std::setw(6) << std::setfill('0') << this->frameName << ".png" << std::endl;
 		for (std::uint64_t keypointID = 0; keypointID < cameraData.keypoints.size(); ++keypointID) {
 			const Keypoint& keypoint = cameraData.keypoints[keypointID];
 			if (keypointID > 0ULL)
