@@ -13,6 +13,7 @@ We recommend running the project in a docker container. All dependencies will be
 Git clone the repository to the local machine:
 
 ```bash
+cd /path/to/your/workspace
 git clone https://github.com/YJJfish/Featuremetric-Calibration.git
 cd Featuremetric-Calibration
 ```
@@ -38,13 +39,16 @@ docker build -t calibration:1.0 .
 
 Run a Docker container with the following options:
 
- - Mount the project folder to `/home/ubuntu/workspace` in the container.
- - Specify the maximum RAM available to the container (e.g., 4GB) according to your dataset.
+ - Mount the workspace folder in the host machine to `/home/ubuntu/workspace` in the container.
+ - Specify the maximum RAM available to the container (e.g., 8GB) according to your dataset.
+ - Include GPU support for the container by using `--gpus all`.
 ```bash
-docker run --rm -dit \
+cd /path/to/your/workspace
+docker run -dit \
 	--name calibration-container \
 	-v $(pwd):/home/ubuntu/workspace \
-	--memory=4g \
+	--memory=8g \
+	--gpus all
 	calibration:1.0
 docker exec -it calibration-container bash
 ```
@@ -52,10 +56,10 @@ docker exec -it calibration-container bash
 Inside the container, use `CMake` to generate the project files and use `make` to compile the project:
 
 ```bash
-cd workspace/src
+cd workspace/Featuremetric-Calibration/src
 mkdir build
 cd build
-cmake -S .. -B . --DCMAKE_BUILD_TYPE=Release
+cmake -S .. -B . -DCMAKE_BUILD_TYPE=Release
 make
 ```
 
@@ -63,7 +67,7 @@ make
 
 ### Dataset
 
-Download the [multiface dataset](https://github.com/facebookresearch/multiface) (or its mini-dataset). If your download path is outside of this repository, you may wish to add an additional mounting point to the container.
+Download the [multiface dataset](https://github.com/facebookresearch/multiface) (or its mini-dataset).
 
 ### Data Preprocessing
 
