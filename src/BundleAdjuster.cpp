@@ -204,8 +204,10 @@ void BundleAdjuster::optimize(void) {
 	this->translationRegularizationCostHistory.clear();
 	this->focalLengthVarianceCostHistory.clear();
 	this->principalPointVarianceCostHistory.clear();
-	this->focalLengthErrorHistory.clear();
-	this->principalPointErrorHistory.clear();
+	this->focalLengthAbsErrorHistory.clear();
+	this->focalLengthRelErrorHistory.clear();
+	this->principalPointAbsErrorHistory.clear();
+	this->principalPointRelErrorHistory.clear();
 	// For each camera, find all frames that have this camera.
 	std::cout << "[BundleAdjuster] Collect frame names for each camera." << std::endl;
 	std::map<std::uint64_t, std::vector<std::uint64_t>> cameraName2FrameNames{};
@@ -509,29 +511,39 @@ void BundleAdjuster::optimize(void) {
 			principalPointVarianceCost /= this->parameters.lambda5 * cumulativeScale;
 		this->principalPointVarianceCostHistory.push_back(principalPointVarianceCost);
 		// Evaluate the L1 error.
-		double focalLengthError = 0.0;
-		double principalPointError = 0.0;
+		double focalLengthAbsError = 0.0;
+		double focalLengthRelError = 0.0;
+		double principalPointAbsError = 0.0;
+		double principalPointRelError = 0.0;
 		for (const auto& cameraParametersEntry : this->pKRT->cameraParametersMap) {
 			std::uint64_t cameraName = cameraParametersEntry.first;
 			const Eigen::Vector4d& globalIntrinsics = this->globalIntrinsics.at(cameraName);
 			const Eigen::Vector4d& groundTruthIntrinsics = cameraParametersEntry.second.intrinsics;
 			const std::vector<std::uint64_t>& frameNames = cameraName2FrameNames.at(cameraName);
 			if (frameNames.size() == 0ULL) continue;
-			focalLengthError += (globalIntrinsics.head<2>() - groundTruthIntrinsics.head<2>()).norm();
-			principalPointError += (globalIntrinsics.tail<2>() - groundTruthIntrinsics.tail<2>()).norm();
+			focalLengthAbsError += (globalIntrinsics.head<2>() - groundTruthIntrinsics.head<2>()).cwiseAbs().sum();
+			focalLengthRelError += (globalIntrinsics.head<2>() - groundTruthIntrinsics.head<2>()).cwiseQuotient(groundTruthIntrinsics.head<2>()).cwiseAbs().sum();
+			principalPointAbsError += (globalIntrinsics.tail<2>() - groundTruthIntrinsics.tail<2>()).cwiseAbs().sum();
+			principalPointRelError += (globalIntrinsics.tail<2>() - groundTruthIntrinsics.tail<2>()).cwiseQuotient(Eigen::Vector2d(1334.0, 2048.0)).cwiseAbs().sum();
 		}
-		focalLengthError /= static_cast<double>(numValidCameras);
-		principalPointError /= static_cast<double>(numValidCameras);
-		this->focalLengthErrorHistory.push_back(focalLengthError);
-		this->principalPointErrorHistory.push_back(principalPointError);
+		focalLengthAbsError /= static_cast<double>(numValidCameras);
+		focalLengthRelError /= static_cast<double>(numValidCameras);
+		principalPointAbsError /= static_cast<double>(numValidCameras);
+		principalPointRelError /= static_cast<double>(numValidCameras);
+		this->focalLengthAbsErrorHistory.push_back(focalLengthAbsError);
+		this->focalLengthRelErrorHistory.push_back(focalLengthRelError);
+		this->principalPointAbsErrorHistory.push_back(principalPointAbsError);
+		this->principalPointRelErrorHistory.push_back(principalPointRelError);
 		std::cout << "[BundleAdjuster] Reprojection cost = " << reprojectionCost << std::endl;
 		std::cout << "[BundleAdjuster] Featuremetric reprojection cost = " << featuremetricReprojectionCost << std::endl;
 		std::cout << "[BundleAdjuster] Rotation regularization cost = " << rotationRegularizationCost << std::endl;
 		std::cout << "[BundleAdjuster] Translation regularization cost = " << translationRegularizationCost << std::endl;
 		std::cout << "[BundleAdjuster] Focal length variance cost = " << focalLengthVarianceCost << std::endl;
 		std::cout << "[BundleAdjuster] Principal point variance cost = " << principalPointVarianceCost << std::endl;
-		std::cout << "[BundleAdjuster] Focal length L1 error = " << focalLengthError << std::endl;
-		std::cout << "[BundleAdjuster] Principal point L1 error = " << principalPointError << std::endl;
+		std::cout << "[BundleAdjuster] Focal length L1 absolute error = " << focalLengthAbsError << std::endl;
+		std::cout << "[BundleAdjuster] Focal length L1 relative error = " << focalLengthRelError << std::endl;
+		std::cout << "[BundleAdjuster] Principal point L1 absolute error = " << principalPointAbsError << std::endl;
+		std::cout << "[BundleAdjuster] Principal point L1 relative error = " << principalPointRelError << std::endl;
 		// Update coefficients.
 		iteration += 1LL;
 		if (iteration == 0LL) continue;
@@ -584,12 +596,20 @@ void BundleAdjuster::optimize(void) {
 	for (double cost : this->principalPointVarianceCostHistory)
 		std::cout << cost << " ";
 	std::cout << std::endl;
-	std::cout << "[BundleAdjuster] Focal length error history:" << std::endl;
-	for (double focalLengthError : this->focalLengthErrorHistory)
+	std::cout << "[BundleAdjuster] Focal length absolute error history:" << std::endl;
+	for (double focalLengthError : this->focalLengthAbsErrorHistory)
 		std::cout << focalLengthError << " ";
 	std::cout << std::endl;
-	std::cout << "[BundleAdjuster] Principal point error history:" << std::endl;
-	for (double principalPointError : this->principalPointErrorHistory)
+	std::cout << "[BundleAdjuster] Focal length relative error history:" << std::endl;
+	for (double focalLengthError : this->focalLengthRelErrorHistory)
+		std::cout << focalLengthError << " ";
+	std::cout << std::endl;
+	std::cout << "[BundleAdjuster] Principal point absolute error history:" << std::endl;
+	for (double principalPointError : this->principalPointAbsErrorHistory)
+		std::cout << principalPointError << " ";
+	std::cout << std::endl;
+	std::cout << "[BundleAdjuster] Principal point relative error history:" << std::endl;
+	for (double principalPointError : this->principalPointRelErrorHistory)
 		std::cout << principalPointError << " ";
 	std::cout << std::endl;
 }
@@ -634,12 +654,20 @@ bool BundleAdjuster::saveHistory(const std::filesystem::path& path) const {
 	for (double cost : this->principalPointVarianceCostHistory)
 		fout << "," << cost;
 	fout << std::endl;
-	fout << "FocalLengthError";
-	for (double error : this->focalLengthErrorHistory)
+	fout << "FocalLengthAbsError";
+	for (double error : this->focalLengthAbsErrorHistory)
 		fout << "," << error;
 	fout << std::endl;
-	fout << "PrincipalPointError";
-	for (double error : this->principalPointErrorHistory)
+	fout << "FocalLengthRelError";
+	for (double error : this->focalLengthRelErrorHistory)
+		fout << "," << error;
+	fout << std::endl;
+	fout << "PrincipalPointAbsError";
+	for (double error : this->principalPointAbsErrorHistory)
+		fout << "," << error;
+	fout << std::endl;
+	fout << "PrincipalPointRelError";
+	for (double error : this->principalPointRelErrorHistory)
 		fout << "," << error;
 	fout << std::endl;
 	fout.close();

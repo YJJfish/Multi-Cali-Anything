@@ -115,8 +115,10 @@ public:
 	std::vector<double> translationRegularizationCostHistory{};
 	std::vector<double> focalLengthVarianceCostHistory{};
 	std::vector<double> principalPointVarianceCostHistory{};
-	std::vector<double> focalLengthErrorHistory{};
-	std::vector<double> principalPointErrorHistory{};
+	std::vector<double> focalLengthAbsErrorHistory{};
+	std::vector<double> focalLengthRelErrorHistory{};
+	std::vector<double> principalPointAbsErrorHistory{};
+	std::vector<double> principalPointRelErrorHistory{};
 
 private:
 
