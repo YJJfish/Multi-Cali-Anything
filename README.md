@@ -40,14 +40,16 @@ docker build -t calibration:1.0 .
 Run a Docker container with the following options:
 
  - Mount the workspace folder in the host machine to `/home/ubuntu/workspace` in the container.
- - Specify the maximum RAM available to the container (e.g., 8GB) according to your dataset.
+ - Specify the amount of RAM available to the container (e.g., 16GB) according to your dataset.
+ - Specify the amount of shared memory available to the container (e.g., 8GB) according to your dataset.
  - Include GPU support for the container by using `--gpus all`.
 ```bash
 cd /path/to/your/workspace
 docker run -dit \
 	--name calibration-container \
 	-v $(pwd):/home/ubuntu/workspace \
-	--memory=8g \
+	--memory=16g \
+	--shm-size=8g \
 	--gpus all
 	calibration:1.0
 docker exec -it calibration-container bash
