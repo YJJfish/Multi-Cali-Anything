@@ -1,10 +1,5 @@
 # Featuremetric-Calibration
 
-The official implementation of (Name TBD).
-
-## About
-
-
 
 ## Installation
 
