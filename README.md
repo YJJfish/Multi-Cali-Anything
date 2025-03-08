@@ -14,7 +14,7 @@ journal={arXiv preprint arXiv:2503.00737},
 year={2025}
 }
 ```
-This code is only for academic and research purposes. For commercial use, please contact [Jinjiang You](jinjiany@alumni.cmu.edu) and [Hewei Wang](heweiw@alumni.cmu.edu).
+This code is only for academic and research purposes. Please contact us for commercial use.
 
 ## Installation
 
