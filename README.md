@@ -1,9 +1,6 @@
 # Multi-Cali Anything
 
-With the spirit of reproducible research, this repository contains all the codes required to produce the results in the manuscript: 
-
-> Jinjiang You, Hewei Wang, Yijie Li, Mingxiao Huo, Long Van Tran Ha, Mingyuan Ma, Jinfeng Xu, Puzhen Wu, Shubham Garg, Wei Pu, *Multi-Cali Anything: Dense Feature Multi-Frame Structure-from-Motion for Large-Scale Camera Array Calibration*, under review
-
+With the spirit of reproducible research, this repository contains all the codes required to produce the results in the manuscript.
 If you find our work useful in your research, please consider citing our [paper](https://www.arxiv.org/abs/2503.00737).
 
 ```
