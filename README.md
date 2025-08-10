@@ -1,9 +1,9 @@
 # Multi-Cali Anything
 
-[Jinjiang You](https://yjjfish.github.io/)\*, [Hewei Wang](https://github.com/WangHewei16)\*, Yijie Li, Mingxiao Huo, Long Van Tran Ha, Mingyuan Ma, Jinfeng Xu, Puzhen Wu, Shubham Garg, Wei Pu
-
 [![](https://img.shields.io/badge/arXiv-2504.15376-b31b1b.svg?logo=arxiv&logoColor=white)](https://www.arxiv.org/abs/2503.00737)
 [![](https://img.shields.io/badge/%F0%9F%8F%A0%20_Homepage-4285F4?color=4285F4&logoColor=white)](https://wanghewei16.github.io/Multi-Cali-Anything/)
+
+[Jinjiang You](https://yjjfish.github.io/)\*, [Hewei Wang](https://github.com/WangHewei16)\*, Yijie Li, Mingxiao Huo, Long Van Tran Ha, Mingyuan Ma, Jinfeng Xu, Puzhen Wu, Shubham Garg, Wei Pu
 
 [[Dataset(*Coming Soon*)]] [[BibTeX](#citing)] [[Gallery](#gallery)]
 
